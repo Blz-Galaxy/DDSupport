@@ -1,29 +1,36 @@
 package org.dota.support.pojo;
 
-public class Data {
-	private  String username;
-    private  String password;
+public class Hero {
+	private String ID;
+	private String Ename;
+	private String Cname;
 
-    public String getUsername() {
-        return username;
-    }
+	public String getID() {
+		return ID;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public void setID(String iD) {
+		ID = iD;
+	}
 
-    public String getPassword() {
-        return password;
-    }
+	public String getEname() {
+		return Ename;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public void setEname(String ename) {
+		Ename = ename;
+	}
+
+	public String getCname() {
+		return Cname;
+	}
+
+	public void setCname(String cname) {
+		Cname = cname;
+	}
 
 	@Override
 	public String toString() {
-		return "Data [username=" + username + ", password=" + password + "]";
+		return "Hero [ID=" + ID + ", Ename=" + Ename + ", Cname=" + Cname + "]";
 	}
-    
-    
 }

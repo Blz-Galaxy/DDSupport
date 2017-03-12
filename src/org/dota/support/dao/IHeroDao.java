@@ -2,10 +2,18 @@ package org.dota.support.dao;
 
 import java.util.HashMap;
 import java.util.List;
+import org.dota.support.pojo.Hero;
+import org.dota.support.pojo.Recommend;
 
+public interface IHeroDao {
 
-public interface IDataDao {
-	
-	public List<HashMap<String, String>> selectHeros() ;		
+	public List<Hero> selectHeros();
 
+	public Hero selectHeroByID(String ID);
+
+	public List<Hero> recommendHeros();
+
+	public List<Recommend> sumAssist(List<String> Teammate);
+
+	public List<Recommend> sumAdvantage(List<String> Enemy);
 }
