@@ -8,6 +8,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.dota.support.pojo.Hero;
 import org.dota.support.pojo.Recommend;
 import org.dota.support.service.HeroService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,30 +28,53 @@ public class HeroController {
 	@Autowired
 	private HeroService heroService;
 
-	@RequestMapping(value = "/heros", method = RequestMethod.GET)
-	public String FetchHero(HttpServletRequest request) {
-		String ID = request.getParameter("ID");
-		System.out.println(ID);
-
-		System.out.println(heroService.getHerosByID(ID).toString());
-		return "welcome";
+	@RequestMapping(value = "/hero", method = RequestMethod.GET)
+	@ResponseBody
+	public JSONObject FetchHero(HttpServletRequest request) {
+		logger.info("Getting hero...");
+		Hero hero = null;
+		try {
+			String ID = request.getParameter("ID");
+			System.out.println(ID);
+			hero = heroService.getHerosByID(ID);
+		} catch (Exception e) {
+			logger.error(e.toString());
+		}
+		logger.info("Geted hero!");
+		if (hero == null) {
+			JSONObject error = new JSONObject();
+			error.put("error", "null value");
+			return error;
+		}
+		return JSONObject.fromObject(hero);
 	}
 
 	@RequestMapping(value = "/recommend", method = RequestMethod.GET)
 	@ResponseBody
 	public JSONArray FetchData(HttpServletRequest request) {
 		logger.info("Getting recommend...");
-		String Teammate = request.getParameter("Teammate");
-		String Enemy = request.getParameter("Enemy");
-		List<String> Teammate_L = null, Enemy_L = null;
+		JSONArray jArray = null;
+		try {
+			String Teammate = request.getParameter("Teammate");
+			String Enemy = request.getParameter("Enemy");
+			List<String> Teammate_L = null, Enemy_L = null;
 
-		if (Teammate != null)
-			Teammate_L = Arrays.asList(Teammate.split(","));		
-		if (Enemy != null)
-			Enemy_L = Arrays.asList(Enemy.split(","));
+			if (Teammate != null)
+				Teammate_L = Arrays.asList(Teammate.split(","));
+			if (Enemy != null)
+				Enemy_L = Arrays.asList(Enemy.split(","));
 
-		List<Recommend> recommends = getRecommends(Teammate_L, Enemy_L);
-		JSONArray jArray = JSONArray.fromObject(recommends);
+			List<Recommend> recommends = getRecommends(Teammate_L, Enemy_L);
+			if (recommends == null) {
+				jArray = new JSONArray();
+				jArray.add(0, "null value");
+				return jArray;
+			} else
+				jArray = JSONArray.fromObject(recommends);
+		} catch (Exception e) {
+			logger.error(e.toString());
+		}
+		logger.info("Geted recommend!");
 		return jArray;
 	}
 
@@ -63,27 +87,27 @@ public class HeroController {
 			Enemy_R = heroService.getAdvantage(Enemy_L);
 
 		List<Recommend> recommends = new ArrayList<Recommend>();
-		
+
 		if (Enemy_R == null && Teammate_R == null)
 			return null;
-		
-		if(Teammate_R == null)
+
+		if (Teammate_R == null)
 			recommends = Enemy_R;
-		
-		if(Enemy_R == null)
+
+		if (Enemy_R == null)
 			recommends = Teammate_R;
-		
-		if(Enemy_R != null && Teammate_R != null)
+
+		if (Enemy_R != null && Teammate_R != null)
 			for (Recommend team : Teammate_R) {
 				for (Recommend enemy : Enemy_R) {
 					String e_hero = enemy.getHero();
 					String t_hero = team.getHero();
-	
+
 					double e_value = enemy.getIdxValue();
 					double t_value = team.getIdxValue();
-	
+
 					if (e_hero.equals(t_hero)) {
-						
+
 						Recommend sum = new Recommend();
 						sum.setHero(e_hero);
 						sum.setIdxValue(e_value + t_value);
@@ -92,7 +116,7 @@ public class HeroController {
 					}
 				}
 			}
-		
+
 		Collections.sort(recommends);
 		return recommends;
 	}
