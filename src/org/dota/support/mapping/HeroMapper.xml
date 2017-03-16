@@ -28,6 +28,29 @@
 		</foreach>
 		GROUP BY Hero
 	</select>
+	
+	<select id="sumIdxValue" resultType="org.dota.support.pojo.Recommend" parameterType="HashMap">
+		SELECT Hero, IdxValue FROM 
+		(
+			SELECT TEMP_TABLE.Hero as Hero,sum(TEMP_TABLE.IdxValue) as IdxValue from 
+			(
+				SELECT Hero,sum(Assist) as IdxValue FROM ASSIST_INFO WHERE Teammate IN 
+				<foreach collection="Teammate" index="index" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+				GROUP BY Hero				
+				UNION ALL				
+				SELECT Hero,sum(Advantage) as IdxValue FROM ANTI_INFO WHERE Enemy IN 
+				<foreach collection="Enemy" index="index" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+				GROUP BY Hero
+			) AS TEMP_TABLE
+			GROUP BY Hero
+		) AS SUMMARY_TABLE 
+		ORDER BY 2 DESC 
+		LIMIT 10
+	</select>
 
 	<select id="getAssist" resultType="org.dota.support.pojo.Assist" parameterType="HashMap">
 		SELECT Hero,Teammate,Assist,WinRate,CombTimes
